@@ -5,6 +5,7 @@
 # Note: The pygame tutorial by Eddie Sharick was used for the GUI engine. The GUI code was altered by Boo Sung Kim to
 # fit in with the rest of the project.
 #
+from logger import logger
 import chess_engine
 import pygame as py
 
@@ -19,32 +20,42 @@ MAX_FPS = 15  # FPS for animations
 IMAGES = {}  # images for the chess pieces
 colors = [py.Color("white"), py.Color("gray")]
 
+"""Logging configuration"""
+game_squares = "ABCDEFGH"
+square_numbers = "87654321"
+game_colors = ["white", "black"]
+current_player = {True: "White", False: "Black"}
+
+
 # TODO: AI black has been worked on. Mirror progress for other two modes
 def load_images():
-    '''
+    """
     Load images for the chess pieces
-    '''
+    """
     for p in Player.PIECES:
         IMAGES[p] = py.transform.scale(py.image.load("images/" + p + ".png"), (SQ_SIZE, SQ_SIZE))
 
 
 def draw_game_state(screen, game_state, valid_moves, square_selected):
-    ''' Draw the complete chess board with pieces
+    """ Draw the complete chess board with pieces
 
     Keyword arguments:
         :param screen       -- the pygame screen
         :param game_state   -- the state of the current chess game
-    '''
+        :param valid_moves  -- the valid moves for the selected piece
+        :param square_selected  -- the square that is selected
+    """
     draw_squares(screen)
     highlight_square(screen, game_state, valid_moves, square_selected)
     draw_pieces(screen, game_state)
 
 
 def draw_squares(screen):
-    ''' Draw the chess board with the alternating two colors
+    """ Draw the chess board with the alternating two colors
 
     :param screen:          -- the pygame screen
-    '''
+    """
+
     for r in range(DIMENSION):
         for c in range(DIMENSION):
             color = colors[(r + c) % 2]
@@ -52,11 +63,11 @@ def draw_squares(screen):
 
 
 def draw_pieces(screen, game_state):
-    ''' Draw the chess pieces onto the board
+    """ Draw the chess pieces onto the board
 
     :param screen:          -- the pygame screen
     :param game_state:      -- the current state of the chess game
-    '''
+    """
     for r in range(DIMENSION):
         for c in range(DIMENSION):
             piece = game_state.get_piece(r, c)
@@ -66,13 +77,20 @@ def draw_pieces(screen, game_state):
 
 
 def highlight_square(screen, game_state, valid_moves, square_selected):
+    """ Highlight the selected square and the valid moves for the selected piece
+
+    :param screen:              -- the pygame screen
+    :param game_state:          -- the current state of the chess game
+    :param valid_moves:         -- the valid moves for the selected piece
+    :param (tuple) square_selected:     -- the square that is selected by the player (row, col)
+    """
     if square_selected != () and game_state.is_valid_piece(square_selected[0], square_selected[1]):
         row = square_selected[0]
         col = square_selected[1]
 
         if (game_state.whose_turn() and game_state.get_piece(row, col).is_player(Player.PLAYER_1)) or \
                 (not game_state.whose_turn() and game_state.get_piece(row, col).is_player(Player.PLAYER_2)):
-            # hightlight selected square
+            # highlight selected square
             s = py.Surface((SQ_SIZE, SQ_SIZE))
             s.set_alpha(100)
             s.fill(py.Color("blue"))
@@ -90,18 +108,19 @@ def main():
     human_player = ""
     while True:
         try:
-            number_of_players = input("How many players (1 or 2)?\n")
-            if int(number_of_players) == 1:
-                number_of_players = 1
+            # Prompt the user to enter the number of players
+            number_of_players = int(input("How many players (1 or 2)?\n"))
+
+            if number_of_players == 1:
                 while True:
+                    # Prompt the user to enter the color they want to play
                     human_player = input("What color do you want to play (w or b)?\n")
-                    if human_player is "w" or human_player is "b":
+                    if human_player in ["w", "b"]:
                         break
                     else:
                         print("Enter w or b.\n")
                 break
-            elif int(number_of_players) == 2:
-                number_of_players = 2
+            elif number_of_players == 2:
                 break
             else:
                 print("Enter 1 or 2.\n")
@@ -111,7 +130,6 @@ def main():
     py.init()
     screen = py.display.set_mode((WIDTH, HEIGHT))
     clock = py.time.Clock()
-    game_state = chess_engine.game_state()
     load_images()
     running = True
     square_selected = ()  # keeps track of the last selected square

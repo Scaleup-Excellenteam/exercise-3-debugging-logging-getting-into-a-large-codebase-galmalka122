@@ -25,6 +25,10 @@ r \ c     0           1           2           3           4           5         
 # TODO: stalemate
 # TODO: move logs - fix king castle boolean update
 # TODO: change move method argument about is_ai into something more elegant
+def is_valid_square(row, col):
+    return (0 <= row < 8) and (0 <= col < 8)
+
+
 class game_state:
     # Initialize 2D array to represent the chess board
     def __init__(self):
@@ -111,8 +115,10 @@ class game_state:
         ]
 
     def get_piece(self, row, col):
-        if (0 <= row < 8) and (0 <= col < 8):
+        if is_valid_square(row, col):
             return self.board[row][col]
+        else:
+            return None
 
     def is_valid_piece(self, row, col):
         evaluated_piece = self.get_piece(row, col)
